@@ -1,6 +1,8 @@
 name: Deploy
 
-# Builds the engine (wasm32 and wasm64) and uploads the site to Cloudflare Pages.
+# Builds the engine (wasm32 and wasm64, side by side) and uploads the site to Cloudflare Pages.
+# An engine is rebuilt only when its sources change: otherwise the last build is reused and
+# a push that touches only web/ deploys in a minute or two.
 # Needs the repository secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 on:
   push:
@@ -18,30 +20,45 @@ env:
   PROJECT: astris
 
 jobs:
-  deploy:
+  engine:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    strategy:
+      matrix:
+        include:
+          - {name: wasm32, out: pkg, flags: ''}
+          - {name: wasm64, out: pkg64, flags: '-Wasm64'}
     steps:
       - uses: actions/checkout@v4
 
+      # The finished engine, keyed by everything that goes into it.
+      - id: built
+        uses: actions/cache@v4
+        with:
+          path: web/${{ matrix.out }}
+          key: engine-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ hashFiles('crates/**', 'Cargo.toml', 'Cargo.lock', 'web/build.ps1') }}
+
       - name: Rust
+        if: steps.built.outputs.cache-hit != 'true'
         run: |
           rustup toolchain install $TOOLCHAIN --profile minimal --component rust-src
           rustup default $TOOLCHAIN
           # build.ps1 asks for `+nightly`, so the pinned one answers to that name too.
           rustup toolchain link nightly "$(rustc --print sysroot)"
 
-      - uses: actions/cache@v4
+      - if: steps.built.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             ~/.cargo/bin/wasm-bindgen
             target
-          key: wasm-${{ env.TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
-          restore-keys: wasm-${{ env.TOOLCHAIN }}-
+          key: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-
 
       - name: wasm-bindgen and Binaryen
+        if: steps.built.outputs.cache-hit != 'true'
         run: |
           if ! wasm-bindgen --version 2>/dev/null | grep -q "$WASM_BINDGEN"; then
             cargo install wasm-bindgen-cli --version $WASM_BINDGEN --locked --force
@@ -49,13 +66,26 @@ jobs:
           curl -sL https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN/binaryen-$BINARYEN-x86_64-linux.tar.gz | tar xz -C $RUNNER_TEMP
           echo "WASM_OPT=$RUNNER_TEMP/binaryen-$BINARYEN/bin/wasm-opt" >> $GITHUB_ENV
 
-      - name: Build wasm32
+      - name: Build
+        if: steps.built.outputs.cache-hit != 'true'
         shell: pwsh
-        run: ./web/build.ps1 -Release -CpuShare 1
+        run: ./web/build.ps1 -Release ${{ matrix.flags }} -CpuShare 1
 
-      - name: Build wasm64
-        shell: pwsh
-        run: ./web/build.ps1 -Release -Wasm64 -CpuShare 1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.out }}
+          path: web/${{ matrix.out }}
+          retention-days: 1
+
+  deploy:
+    needs: engine
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: web
 
       - name: Site
         run: python3 tools/build-site.py
