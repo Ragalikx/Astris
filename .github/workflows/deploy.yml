@@ -18,7 +18,9 @@ concurrency:
 env:
   TOOLCHAIN: nightly-2026-10-29
   RUST_TOOLCHAIN: nightly-2026-10-29
-  WASM_BINDGEN: 0.2.129
+  # wasm-bindgen from git: threads on memory64 (wasm64) landed after the 0.2.129 release,
+  # and this commit still speaks 0.2.129, the version Cargo.lock pins.
+  WASM_BINDGEN_REV: add691ae7cccf88a00dc4bb66c4b50b406d014f6
   BINARYEN: version_133
   PROJECT: astris
 
@@ -26,11 +28,14 @@ jobs:
   engine:
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    # wasm64 is experimental: if it fails, the site still goes out with wasm32 alone.
+    continue-on-error: ${{ matrix.optional }}
     strategy:
+      fail-fast: false
       matrix:
         include:
-          - {name: wasm32, out: pkg, flags: ''}
-          - {name: wasm64, out: pkg64, flags: '-Wasm64'}
+          - {name: wasm32, out: pkg, flags: '', optional: false}
+          - {name: wasm64, out: pkg64, flags: '-Wasm64', optional: true}
     steps:
       - uses: actions/checkout@v4
 
@@ -54,15 +59,17 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen.rev
             target
-          key: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ hashFiles('Cargo.lock') }}
-          restore-keys: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-
+          key: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ env.WASM_BINDGEN_REV }}-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ env.WASM_BINDGEN_REV }}-
 
       - name: wasm-bindgen and Binaryen
         if: steps.built.outputs.cache-hit != 'true'
         run: |
-          if ! wasm-bindgen --version 2>/dev/null | grep -q "$WASM_BINDGEN"; then
-            cargo install wasm-bindgen-cli --version $WASM_BINDGEN --locked --force
+          if [ "$(cat ~/.cargo/bin/wasm-bindgen.rev 2>/dev/null)" != "$WASM_BINDGEN_REV" ]; then
+            cargo install wasm-bindgen-cli --git https://github.com/wasm-bindgen/wasm-bindgen --rev $WASM_BINDGEN_REV --locked --force
+            echo "$WASM_BINDGEN_REV" > ~/.cargo/bin/wasm-bindgen.rev
           fi
           curl -sL https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN/binaryen-$BINARYEN-x86_64-linux.tar.gz | tar xz -C $RUNNER_TEMP
           echo "WASM_OPT=$RUNNER_TEMP/binaryen-$BINARYEN/bin/wasm-opt" >> $GITHUB_ENV
