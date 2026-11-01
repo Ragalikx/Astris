@@ -9,9 +9,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# A running build is let finish (so its engine lands in the cache); pushes made meanwhile
+# collapse into one run that starts after it.
 concurrency:
   group: deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   TOOLCHAIN: nightly-2026-10-29
