@@ -364,6 +364,8 @@ function setupImportWindow() {
       importLog(`error: ${error.message}`);
       failed(error.code === 'space' ? t('importNoSpace', {need: error.message})
         : error.code === 'unreadable' ? t('importUnreadable', {n: error.count})
+        : error.name === 'ImportBusy' ? t('importBusy')
+        : error.name === 'NoModificationAllowedError' ? t('importLocked')
         : t('importFailed', {error: error.message}));
     }
   }

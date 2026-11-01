@@ -454,7 +454,16 @@ async function writeSounds(files, log, progress) {
  * `onProgress(doneBytes, totalBytes)` the progress. With `sounds` false the sounds are
  * skipped (and any stored before are removed).
  */
-export async function importFrom(dir, {sounds = true, log = () => {}, onProgress = () => {}} = {}) {
+export async function importFrom(dir, options = {}) {
+  // Two imports at once would write over each other's files: the second one waits for nothing
+  // and says so, rather than failing on a folder the first one holds open.
+  return navigator.locks.request('astris-import', {ifAvailable: true}, lock => {
+    if (!lock) throw Object.assign(new Error('another import is running in another tab'), {name: 'ImportBusy'});
+    return importLocked(dir, options);
+  });
+}
+
+async function importLocked(dir, {sounds = true, log = () => {}, onProgress = () => {}} = {}) {
   const started = performance.now();
   const manifest = await readManifest(dir);
   log(`Minecraft ${manifest.minecraft}, schema ${manifest.schema}, data version ${manifest.data_version}`);

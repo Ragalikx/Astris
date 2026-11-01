@@ -84,6 +84,7 @@ const STRINGS = {
     errIsolation: 'The page is not isolated (COOP/COEP headers missing): WebAssembly threads are unavailable.',
     errGpu: 'This browser has no WebGPU. Use Chrome or Edge 113+ (or another browser with WebGPU).',
     errOpfs: 'This browser has no OPFS: there is nowhere to save worlds.',
+    importBusy: 'The game files are already being copied in another tab. Wait for it to finish or close it.', importLocked: 'Another tab of Astris still holds the old copy open. Close the other Astris tabs and try again.',
     errTwoTabs: 'The game is already open in another tab. Close it and reload this page.',
   },
   ru: {
@@ -165,6 +166,7 @@ const STRINGS = {
     errIsolation: 'Страница не изолирована (нужны заголовки COOP/COEP): потоки WebAssembly недоступны.',
     errGpu: 'Браузер не поддерживает WebGPU. Нужен Chrome или Edge 113+ (или другой браузер с WebGPU).',
     errOpfs: 'Браузер не поддерживает OPFS: миры негде сохранить.',
+    importBusy: 'Файлы игры уже копируются в другой вкладке. Дождитесь окончания или закройте её.', importLocked: 'Другая вкладка Astris ещё держит открытой старую копию. Закройте остальные вкладки Astris и попробуйте снова.',
     errTwoTabs: 'Игра уже открыта в другой вкладке. Закройте её и обновите страницу.',
   },
   uk: {
@@ -246,6 +248,7 @@ const STRINGS = {
     errIsolation: 'Сторінка не ізольована (потрібні заголовки COOP/COEP): потоки WebAssembly недоступні.',
     errGpu: 'Браузер не підтримує WebGPU. Потрібен Chrome або Edge 113+ (або інший браузер з WebGPU).',
     errOpfs: 'Браузер не підтримує OPFS: світи ніде зберегти.',
+    importBusy: 'Файли гри вже копіюються в іншій вкладці. Дочекайтеся завершення або закрийте її.', importLocked: 'Інша вкладка Astris ще тримає відкритою стару копію. Закрийте інші вкладки Astris і спробуйте знову.',
     errTwoTabs: 'Гра вже відкрита в іншій вкладці. Закрийте її та оновіть сторінку.',
   },
 };
