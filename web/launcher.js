@@ -11,7 +11,7 @@ import {analyze} from './log-view.js';
 import * as resources from './horizon-import.js';
 
 const LAUNCHER_VERSION = '0.1.0';
-const GITHUB_URL = 'https://github.com/horizon-rust/horizon';
+const GITHUB_URL = 'https://github.com/Ragalikx/Astris';
 // Where "What is Horizon?" leads: the project whose launcher prepares the game's resources.
 const HORIZON_URL = 'https://github.com/horizon-rust/horizon#readme';
 // The engine build the launcher ships with.
@@ -309,7 +309,8 @@ function setupImportWindow() {
     await copy(dir);
   }
 
-  let mode = 'local';
+  // Phones and tablets cannot hand a browser a folder, so they start on the online install.
+  let mode = matchMedia('(pointer: coarse)').matches && !resources.pickSupported() ? 'online' : 'local';
   const showMode = () => {
     segmented($('#imp-mode'), [['local', t('localMode')], ['online', t('onlineMode')]], mode, value => { mode = value; showMode(); });
     $('#imp-online').hidden = mode !== 'online';
