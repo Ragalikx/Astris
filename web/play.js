@@ -10,6 +10,9 @@ import * as sounds from './sounds.js';
 import * as resources from './horizon-import.js';
 import * as peer from './peer.js';
 
+// The page is up: its own error screen takes over from guard.js.
+window.astrisReady = true;
+
 Error.stackTraceLimit = 80;
 const $ = s => document.querySelector(s);
 const started = performance.now();

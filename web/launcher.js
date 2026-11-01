@@ -931,4 +931,4 @@ async function main() {
   // The game page sends players here when nothing is imported yet.
   if (!imported && new URLSearchParams(location.search).get('resources') === 'missing') openImport();
 }
-main();
+main().then(() => { window.astrisReady = true; });
