@@ -15,6 +15,7 @@ concurrency:
 
 env:
   TOOLCHAIN: nightly-2026-10-29
+  RUST_TOOLCHAIN: nightly-2026-10-29
   WASM_BINDGEN: 0.2.129
   BINARYEN: version_133
   PROJECT: astris
@@ -43,8 +44,6 @@ jobs:
         run: |
           rustup toolchain install $TOOLCHAIN --profile minimal --component rust-src
           rustup default $TOOLCHAIN
-          # build.ps1 asks for `+nightly`, so the pinned one answers to that name too.
-          rustup toolchain link nightly "$(rustc --print sysroot)"
 
       - if: steps.built.outputs.cache-hit != 'true'
         uses: actions/cache@v4

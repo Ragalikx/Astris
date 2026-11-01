@@ -20,7 +20,9 @@ try {
  $maxMem = if($Wasm64){'17179869184'}else{'4294967296'}
  $extra64 = if($Wasm64){' -Zcrate-attr=feature(simd_wasm64) --cfg getrandom_backend="custom"'}else{''}
  $env:RUSTFLAGS='-C target-feature=+atomics,+bulk-memory,+mutable-globals -C link-arg=--shared-memory -C link-arg=--import-memory -C link-arg=--max-memory='+$maxMem+$simd+$extra64
- cargo +nightly rustc -p horizon-client --bin horizon-client --target $targetArch --profile $profileName --target-dir $targetDir -j $jobs -Z build-std=std,panic_abort --no-default-features --features audio --locked -- -C link-arg=-zstack-size=8388608 -C link-arg=--export=__wasm_init_tls -C link-arg=--export=__tls_size -C link-arg=--export=__tls_align -C link-arg=--export=__tls_base
+ # The nightly toolchain, or a pinned one from RUST_TOOLCHAIN (the deploy workflow sets it).
+ $toolchain = if($env:RUST_TOOLCHAIN){$env:RUST_TOOLCHAIN}else{'nightly'}
+ cargo "+$toolchain" rustc -p horizon-client --bin horizon-client --target $targetArch --profile $profileName --target-dir $targetDir -j $jobs -Z build-std=std,panic_abort --no-default-features --features audio --locked -- -C link-arg=-zstack-size=8388608 -C link-arg=--export=__wasm_init_tls -C link-arg=--export=__tls_size -C link-arg=--export=__tls_align -C link-arg=--export=__tls_base
  if($LASTEXITCODE -ne 0){throw 'WASM compilation failed'}
  wasm-bindgen "$targetDir/$targetArch/$profileName/horizon-client.wasm" --target web --out-dir $outDir --out-name horizon_client
  if($LASTEXITCODE -ne 0){throw 'wasm-bindgen failed'}
