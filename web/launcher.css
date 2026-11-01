@@ -35,6 +35,8 @@ html { background: var(--page); }
 /* No background on body: it would cover the sky canvas (z-index -1). */
 html, body { margin: 0; min-height: 100%; color: var(--ink); font: 14px/1.5 var(--ui); }
 button, input { font: inherit; color: inherit; }
+button, input[type="checkbox"], input[type="button"] { -webkit-appearance: none; appearance: none; border-radius: 0; -webkit-tap-highlight-color: transparent; }
+button:disabled { -webkit-text-fill-color: currentColor; opacity: 1; }
 .icon { width: 16px; height: 16px; flex: none; image-rendering: pixelated; }
 .muted { color: var(--muted); }
 .small { font-size: 12px; }
@@ -407,3 +409,22 @@ dialog.window.wide-ish { width: min(760px, calc(100vw - 32px)); }
 .build-tested { color: var(--ink); }
 .lic-foot { margin: 0; padding: 0 20px 16px; font-size: 12px; }
 @media (max-width: 640px) { .licences { grid-template-columns: 1fr; } }
+
+/* ---- Phones ---- */
+@media (max-width: 860px) {
+  .tabs { grid-template-rows: auto minmax(0, 1fr); gap: 0; }
+  .tab-list { border-bottom: 2px solid var(--line); padding: 8px 12px; scrollbar-width: none; }
+  .tab-list button { white-space: nowrap; }
+  .tab { padding: 16px; }
+}
+@media (max-width: 600px) {
+  dialog.window, dialog.window.wide, dialog.window.wide-ish { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; }
+  .window-body { padding: 14px; }
+  .small-button, .danger, .tab-list button, .icon-button { min-height: 40px; }
+  .side-links a, .side-links button { padding: 8px; }
+  .topbar { justify-content: space-between; }
+  input, select, textarea { font-size: 16px; }
+}
+@media (max-width: 860px) {
+  .side, .main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+}

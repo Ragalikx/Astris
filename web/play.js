@@ -285,6 +285,8 @@ let lockWanted = null;
 const nativeLock = Element.prototype.requestPointerLock;
 const nativeUnlock = Document.prototype.exitPointerLock;
 function lockPointer(element) {
+  // iPhone Safari has no pointer lock at all.
+  if (!nativeLock) return Promise.reject(new Error('pointer lock is not supported here'));
   const ask = options => { try { return Promise.resolve(nativeLock.call(element, options)); } catch (error) { return Promise.reject(error); } };
   return ask({unadjustedMovement: true}).catch(error => (error?.name === 'NotSupportedError' ? ask() : Promise.reject(error)));
 }
@@ -294,7 +296,7 @@ Element.prototype.requestPointerLock = function () {
 };
 Document.prototype.exitPointerLock = function () {
   lockWanted = null;
-  return nativeUnlock.call(this);
+  return nativeUnlock?.call(this);
 };
 for (const type of ['pointerdown', 'keydown']) {
   addEventListener(type, event => {
@@ -332,7 +334,7 @@ let peerShown = false;
 function showPeer(open) {
   $('#peer').hidden = !open;
   if (open) {
-    nativeUnlock.call(document);
+    nativeUnlock?.call(document);
     $('#peer-not-open').hidden = peer.hosting();
   }
 }
@@ -406,7 +408,7 @@ addEventListener('keydown', event => {
     const debug = $('#debug');
     debug.hidden = !debug.hidden;
     // The overlay frees the pointer but the game keeps wanting it: a click after it is closed takes it back.
-    if (!debug.hidden) { nativeUnlock.call(document); renderTrace(); }
+    if (!debug.hidden) { nativeUnlock?.call(document); renderTrace(); }
     return;
   }
   if (/^F([1-9]|1[01])$/.test(event.code)) event.preventDefault();
@@ -471,7 +473,21 @@ async function boot() {
 
   // The engine downloads and compiles while the saves are read: neither waits for the other.
   const want64 = settings.wasm64;
-  const compile = dir => WebAssembly.compileStreaming(fetch(new URL(`./${dir}/horizon_client_bg.wasm`, location.href)));
+  // Static hosts cap file size (Cloudflare Pages: 25 MiB), so a deployed engine may come
+  // split into parts listed in parts.json; without that file it is one .wasm.
+  const compile = async dir => {
+    const at = name => new URL(`./${dir}/${name}`, location.href);
+    const list = await fetch(at('parts.json')).then(r => r.ok ? r.json() : null, () => null);
+    if (!list) return WebAssembly.compileStreaming(fetch(at('horizon_client_bg.wasm')));
+    const parts = await Promise.all(list.parts.map(name => fetch(at(name)).then(r => {
+      if (!r.ok) throw new Error(`${name}: HTTP ${r.status}`);
+      return r.arrayBuffer();
+    })));
+    const bytes = new Uint8Array(parts.reduce((n, part) => n + part.byteLength, 0));
+    let offset = 0;
+    for (const part of parts) { bytes.set(new Uint8Array(part), offset); offset += part.byteLength; }
+    return WebAssembly.compile(bytes);
+  };
   let compiled = compile(want64 ? 'pkg64' : 'pkg');
   compiled.catch(() => {});
   setStage(t('readingSaves'));

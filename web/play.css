@@ -97,3 +97,12 @@ button:hover, .button:hover { background: #3d3560; }
 .tl.err .lv { color: #f07a68; }
 .fatal-hint { margin: 0 0 12px; padding: 10px 12px; color: #ffe2a8; background: rgba(240, 180, 90, .1); border-left: 3px solid #e0b45a; line-height: 1.5; }
 .fatal-hint[hidden] { display: none; }
+
+/* Phones: no native iOS button look, a smaller logo, room for the notch. */
+button { -webkit-appearance: none; appearance: none; border-radius: 0; -webkit-tap-highlight-color: transparent; }
+@media (max-width: 600px) {
+  .logo { font-size: 24px; gap: 10px; }
+  .mark { width: 34px; height: 34px; }
+  .mark svg { width: 20px; height: 20px; }
+  body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+}

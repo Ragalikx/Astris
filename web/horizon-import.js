@@ -32,7 +32,18 @@ export async function bundle(kind) {
 export async function remove() {
   const root = await top();
   for (const name of [DIR, SOUNDS_DIR]) {
-    await root.removeEntry(name, {recursive: true}).catch(error => { if (error.name !== 'NotFoundError') throw error; });
+    // A file still open for writing (a failed import in this or another tab) locks the folder
+    // for a moment after it is let go, so a locked folder is tried again before giving up.
+    for (let attempt = 1; ; attempt++) {
+      try {
+        await root.removeEntry(name, {recursive: true});
+        break;
+      } catch (error) {
+        if (error.name === 'NotFoundError') break;
+        if (error.name !== 'NoModificationAllowedError' || attempt === 6) throw error;
+        await new Promise(resolve => setTimeout(resolve, 500 * attempt));
+      }
+    }
   }
 }
 
@@ -76,21 +87,40 @@ export async function fromNetwork(address, log) {
   const list = raw.filter(item => Array.isArray(item)
     && typeof item[0] === 'string' && Number.isSafeInteger(item[1]) && item[1] >= 0 && safePath(item[0]));
   checkedList(list.map(([path, size]) => ({path, size})), base.href);
-  const files = list.map(([path, size]) => remoteFile(new URL(path.split('/').map(encodeURIComponent).join('/'), base), path, size));
+  const files = list.map(([path, size]) => remoteFile(new URL(path.split('/').map(hidden).join('/'), base), path, size));
   return treeOf(files, base.host);
 }
 
+// Ad blockers match words in URLs: Brave drops blockstates/beacon.json as a tracking
+// beacon. Each name's first letter goes percent-encoded, which servers decode as usual
+// but filter lists don't see through.
+const hidden = name => !name || name.charCodeAt(0) > 0x7e ? encodeURIComponent(name) : `%${name.charCodeAt(0).toString(16).padStart(2, '0').toUpperCase()}${encodeURIComponent(name.slice(1))}`;
+
 // A file on the network: its size is known from the list, its bytes are fetched on use.
 function remoteFile(url, path, size) {
-  const blob = async () => {
+  const once = async () => {
     const answer = await fetch(url, {cache: 'no-store'});
-    if (!answer.ok) throw new Error(`${path}: HTTP ${answer.status}`);
+    if (!answer.ok) throw Object.assign(new Error(`${path}: HTTP ${answer.status}`), {retry: answer.status >= 500 || answer.status === 429});
     // An announced length the list agrees with bounds the body already (the browser takes
     // no more than it); without one the bytes are counted as they come.
     const announced = answer.headers.get('Content-Length');
     const data = announced !== null && Number(announced) === size ? await answer.blob() : await limitedBlob(answer.body, size, path);
     if (data.size !== size) throw new Error(`${path}: ${data.size} bytes received, ${size} listed`);
     return data;
+  };
+  // Tunnels and home connections drop a request now and then; one lost file
+  // should not end an import of tens of thousands.
+  const blob = async () => {
+    for (let attempt = 1; ; attempt++) {
+      try {
+        return await once();
+      } catch (error) {
+        const network = error instanceof TypeError || error?.retry;
+        if (!network) throw error;
+        if (attempt === 5) throw new Error(`${path}: ${error.message}`);
+        await new Promise(resolve => setTimeout(resolve, 500 * 2 ** attempt));
+      }
+    }
   };
   return {
     lazy: true, size, webkitRelativePath: `remote/${path}`, blob,
@@ -366,7 +396,7 @@ async function writeBundle(dir, fileName, files, log, progress, label) {
         parts[i] = await part.blob();
       }
     };
-    await Promise.all(Array.from({length: Math.min(8, remote.length)}, download));
+    await Promise.all(Array.from({length: Math.min(16, remote.length)}, download));
     try { await writable.write(new Blob(parts)); }
     catch (error) { throw await explain(error, batch); }
     progress(pending);
