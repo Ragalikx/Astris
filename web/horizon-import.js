@@ -60,7 +60,7 @@ async function storageLine() {
 export const pickSupported = () => typeof window.showDirectoryPicker === 'function';
 
 /**
- * A prepared folder shared over the network by tools/astris-share.py: its file list
+ * A prepared folder shared over the network by a server: its file list
  * (/__astris.json, [path, size] pairs) as the same tree `fromFileList` makes, with files
  * that are downloaded only when copied (in `writeBundle`, a batch at a time).
  */

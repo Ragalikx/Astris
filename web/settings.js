@@ -15,7 +15,7 @@ export const DEFAULTS = Object.freeze({
   bootMs: 0,           // the last launch's time to the first frame: paces the loading screen
   logKeep: 10,         // logs kept, the game's and the launcher's together (launch-logs.js), 1-100
   frameCap: true,      // frames at the monitor's refresh rate only (game/browser.rs)
-  netUrl: '',          // where tools/astris-share.py shares a Horizon folder
+  netUrl: '',          // the server sharing a prepared Horizon folder
   netConsent: false,   // the player said they understand the risks of a network source
 });
 

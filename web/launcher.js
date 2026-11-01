@@ -187,7 +187,7 @@ function openImport() {
   openWindow('import');
 }
 const MiB = n => (n / 1048576).toFixed(0);
-// Set up by setupImportWindow: imports from tools/astris-share.py's address.
+// Set up by setupImportWindow: imports from a server's address.
 let importFromNetwork = null, showImportMode = null;
 function setupImportWindow() {
   $('#imp-what').href = HORIZON_URL;
