@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en" class="i18n-wait">
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' blob: data: http: https:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<style>html.i18n-wait body { visibility: hidden; animation: i18n-shown 0s 1.5s forwards; } @keyframes i18n-shown { to { visibility: visible; } }</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Astris</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" crossorigin href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@600;700&display=swap">
+<link rel="stylesheet" href="./play.css">
+<body>
+<div id="boot" class="overlay">
+  <canvas id="sky" class="sky" aria-hidden="true"></canvas>
+  <div class="boot-card">
+    <div class="bar" aria-hidden="true"></div>
+    <div class="status"><span id="stage" role="status"></span><span id="elapsed"></span></div>
+    <ol id="stages" class="stages"></ol>
+    <p id="tip" class="tip"></p>
+  </div>
+</div>
+<div id="fatal" class="overlay" hidden>
+  <div class="boot-card">
+    <div class="logo bad"><span class="word" data-i18n="fatalTitle">Launch failed</span></div>
+    <p id="fatal-hint" class="fatal-hint" hidden></p>
+    <pre id="fatal-text"></pre>
+    <div class="row">
+      <button id="fatal-log" type="button" data-i18n="saveLog">Save log</button>
+      <a class="button" href="./" data-i18n="toLauncher">Back to launcher</a>
+    </div>
+  </div>
+</div>
+<div id="toast" role="status" hidden></div>
+<section id="peer" class="peer" hidden aria-labelledby="peer-title">
+  <header class="peer-head"><h2 id="peer-title" data-i18n="peerTitle">Play together</h2><button id="peer-close" type="button" data-i18n-title="close">✕</button></header>
+  <p class="peer-note" data-i18n="peerIntro"></p>
+  <div class="peer-tabs"><button type="button" data-peer-tab="host" data-i18n="peerHostTab">Invite</button><button type="button" data-peer-tab="guest" data-i18n="peerGuestTab">Join</button></div>
+  <div data-peer-pane="host">
+    <p id="peer-not-open" class="peer-warn" data-i18n="peerNotOpen"></p>
+    <ol class="peer-steps">
+      <li><span data-i18n="peerHost1"></span> <button id="peer-invite" type="button" data-i18n="peerCreate">Create an invitation</button>
+        <textarea id="peer-offer" readonly rows="3" spellcheck="false"></textarea><button id="peer-offer-copy" type="button" data-i18n="peerCopy">Copy</button></li>
+      <li><span data-i18n="peerHost2"></span>
+        <textarea id="peer-answer-in" rows="3" spellcheck="false"></textarea><button id="peer-connect" type="button" data-i18n="peerConnect">Connect</button></li>
+    </ol>
+  </div>
+  <div data-peer-pane="guest" hidden>
+    <ol class="peer-steps">
+      <li><span data-i18n="peerGuest1"></span>
+        <textarea id="peer-offer-in" rows="3" spellcheck="false"></textarea><button id="peer-reply" type="button" data-i18n="peerReply">Make my answer</button></li>
+      <li><span data-i18n="peerGuest2"></span>
+        <textarea id="peer-answer" readonly rows="3" spellcheck="false"></textarea><button id="peer-answer-copy" type="button" data-i18n="peerCopy">Copy</button></li>
+    </ol>
+  </div>
+  <p id="peer-status" class="peer-status" role="status"></p>
+</section>
+<div id="debug" hidden>
+  <div class="debug-head">
+    <b>Log</b> <span id="debug-health"></span>
+    <button id="debug-save" type="button">Save</button>
+    <button id="debug-close" type="button">✕</button>
+  </div>
+  <pre id="debug-trace"></pre>
+</div>
+<script type="module" src="./play.js"></script>
+</body>
+</html>

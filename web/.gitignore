@@ -1,0 +1,6 @@
+/pkg/
+/__pycache__/
+/.cache/
+/logs/
+/pkg64/
+/browser-session.log

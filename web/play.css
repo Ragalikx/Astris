@@ -1,0 +1,99 @@
+:root {
+  --bg: #040507;
+  --panel: #1a1727;
+  --ink: #ecedf3;
+  --muted: #a2a5b0;
+  --accent: #9a86ff;
+  --danger: #f07a68;
+  --success: #45c27a;
+  --star: #ffd98a;
+  --pixel: "Pixelify Sans", ui-monospace, monospace;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --ui: "Inter", ui-sans-serif, system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font: 14px/1.4 var(--ui); }
+/* winit appends the game canvas to <body> and writes inline sizes: the viewport wins. */
+body > canvas { position: fixed; inset: 0; width: 100vw !important; height: 100vh !important; display: block; outline: none; touch-action: none; }
+
+.overlay { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; background: var(--bg); padding: 16px; }
+.overlay[hidden] { display: none; }
+.overlay.done { opacity: 0; transition: opacity .45s ease-out; pointer-events: none; }
+.sky { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; filter: blur(2px) brightness(.85); transform: scale(1.02); }
+/* --lit: the bar's colour, from Astris lavender to Minecraft green as the load goes on. */
+.boot-card { --lit: rgb(179, 168, 238); position: relative; width: min(560px, 100%); display: grid; gap: 16px; padding: 22px 24px; background: rgba(10, 11, 14, .74);
+  box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .06), inset -2px -2px 0 rgba(0, 0, 0, .35), 0 0 0 2px #020203; border: 2px solid #24262e; backdrop-filter: blur(4px); }
+.logo { display: flex; align-items: center; gap: 14px; font: 700 34px var(--pixel); letter-spacing: .14em; }
+.logo.bad { color: var(--danger); font-size: 26px; letter-spacing: .04em; }
+.mark { width: 44px; height: 44px; display: grid; place-items: center; background: #15161c; color: var(--star); box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .08), inset -2px -2px 0 rgba(0, 0, 0, .35), 0 0 0 2px #020203;
+  animation: bob 1.6s steps(4) infinite; }
+.mark svg { width: 26px; height: 26px; }
+@keyframes bob { 50% { transform: translateY(-4px); } }
+.word { background: linear-gradient(90deg, var(--ink) 40%, #fff3c9 50%, var(--ink) 60%) 0 0 / 300% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: shine 3.2s steps(24) infinite; }
+.logo.bad .word { background: none; color: inherit; animation: none; }
+@keyframes shine { from { background-position: 100% 0; } to { background-position: -50% 0; } }
+.bar { display: grid; grid-template-columns: repeat(24, 1fr); gap: 3px; height: 14px; }
+/* Each block lights by its overlay's opacity: animated apart from the page's script, so
+   the wave keeps going while the game's start keeps the page busy. */
+.bar span { position: relative; background: #1c1e24; }
+.bar span::after { content: ""; position: absolute; inset: 0; background: var(--lit); opacity: 0; animation: wave 1.8s steps(1) infinite; animation-delay: calc(var(--i) * 55ms); }
+@keyframes wave { 0% { opacity: 1; } 12% { opacity: .55; } 24% { opacity: 0; } }
+.status { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+#stage { color: var(--ink); font-weight: 600; min-height: 1.4em; }
+#stage::after { content: ""; display: inline-block; width: .55em; height: .9em; margin-left: 6px; background: var(--lit); vertical-align: -1px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+#elapsed { font: 12px var(--mono); color: var(--muted); flex: none; }
+.stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font: 12px var(--mono); color: var(--muted); }
+.stages:empty { display: none; }
+.stages li { display: flex; gap: 8px; animation: rise .25s steps(3); }
+.stages li::before { content: ""; width: 6px; height: 6px; margin-top: .5em; background: var(--success); flex: none; }
+.stages li span { margin-left: auto; color: #6a6d78; }
+@keyframes rise { from { opacity: 0; transform: translateY(4px); } }
+.tip { margin: 0; padding-top: 12px; border-top: 2px solid #1c1e24; color: var(--muted); font-size: 13px; min-height: 2.8em; transition: opacity .3s; }
+.tip.out { opacity: 0; }
+#fatal .boot-card { width: min(720px, 100%); }
+#fatal-text { max-height: 50vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font: 12px var(--mono); background: #060709; padding: 10px; margin: 0; box-shadow: inset 0 0 0 2px #24262e; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+button, .button { font: 600 14px var(--ui); color: var(--ink); background: #22242b; border: 0; padding: 8px 14px; cursor: pointer; text-decoration: none; box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .08), inset -2px -2px 0 rgba(0, 0, 0, .35), 0 0 0 2px #04030a; }
+button:hover, .button:hover { background: #3d3560; }
+@media (prefers-reduced-motion: reduce) { .mark, .word, .bar span::after, #stage::after, .stages li { animation: none; } }
+
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 20; max-width: min(640px, calc(100vw - 32px)); background: rgba(10, 11, 14, .92); border: 2px solid #24262e; padding: 10px 14px; pointer-events: none; }
+
+#debug { position: fixed; right: 12px; top: 12px; z-index: 30; width: min(820px, calc(100vw - 24px)); max-height: 65vh; display: flex; flex-direction: column;
+  background: rgba(6, 7, 9, .95); box-shadow: inset 2px 2px 0 rgba(255, 255, 255, .04), 0 0 0 2px #020203, 0 16px 40px rgba(0, 0, 0, .6); border: 2px solid #24262e; }
+#debug[hidden] { display: none; }
+/* Play together: a panel over the game, opened with Ctrl+Shift+M. */
+.peer { position: fixed; right: 16px; top: 16px; z-index: 25; width: min(560px, calc(100vw - 32px)); max-height: calc(100vh - 32px); overflow: auto; padding: 16px 18px; background: rgba(12, 13, 17, .96); border: 2px solid #2a2d36; box-shadow: 0 18px 60px rgba(0, 0, 0, .6); font-size: 13px; line-height: 1.5; }
+.peer[hidden], .peer [hidden] { display: none; }
+.peer-head { display: flex; align-items: center; justify-content: space-between; }
+.peer-head h2 { margin: 0; font: 700 17px var(--ui); }
+.peer-head button, .peer button { font: 600 12px var(--ui); color: var(--ink); background: #22252d; border: 2px solid #33363f; padding: 5px 10px; cursor: pointer; }
+.peer button:hover { background: #2c2f38; }
+.peer-note { color: var(--muted); margin: 8px 0; }
+.peer-tabs { display: flex; gap: 6px; margin: 10px 0; }
+.peer-tabs button[aria-pressed="true"] { border-color: var(--lit); }
+.peer-steps { margin: 0; padding-left: 18px; display: grid; gap: 12px; }
+.peer textarea { display: block; width: 100%; margin: 6px 0; padding: 6px 8px; background: #08090c; color: var(--ink); border: 2px solid #2a2d36; font: 11px/1.4 var(--mono); resize: vertical; word-break: break-all; }
+.peer-warn { color: #ffe2a8; background: rgba(240, 180, 90, .1); border-left: 3px solid #e0b45a; padding: 8px 10px; margin: 0 0 10px; }
+.peer-status { min-height: 1.4em; margin: 10px 0 0; color: var(--lit); font-weight: 600; }
+.debug-head { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 2px solid #1a1c22; color: #eceef2; }
+.debug-head span { color: #6a6d78; font: 11px var(--mono); flex: 1; }
+.debug-head button { padding: 3px 9px; font-size: 12px; }
+#debug-trace { margin: 0; padding: 0; overflow: auto; font: 11px/1.55 var(--mono); color: #b9bcc6; }
+.tl { display: grid; grid-template-columns: 8ch 6ch auto 1fr; gap: 10px; padding: 3px 10px; white-space: pre-wrap; overflow-wrap: anywhere; border-left: 3px solid transparent; border-bottom: 1px solid #111216; }
+.tl:nth-child(even) { background: rgba(255, 255, 255, .015); }
+.tl .t { color: #4f525c; }
+.tl .lv { font-weight: 600; color: #7d9bd6; }
+.tl .src { color: #565a66; }
+.tl .m { min-width: 0; }
+.tl.head, .tl.dim { color: #5c5f69; }
+.tl.dim .lv { color: #4f525c; }
+.tl.ok { color: #bfe8cc; }
+.tl.ok .lv { color: #45c27a; }
+.tl.warn { color: #f3d9a4; background: rgba(240, 184, 79, .06); border-left-color: #f0b84f; }
+.tl.warn .lv { color: #f0b84f; }
+.tl.err { color: #ffc4b9; background: rgba(240, 122, 104, .1); border-left-color: #f07a68; }
+.tl.err .lv { color: #f07a68; }
+.fatal-hint { margin: 0 0 12px; padding: 10px 12px; color: #ffe2a8; background: rgba(240, 180, 90, .1); border-left: 3px solid #e0b45a; line-height: 1.5; }
+.fatal-hint[hidden] { display: none; }

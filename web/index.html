@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en" class="i18n-wait">
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' blob: data:; media-src 'self' blob:; connect-src 'self' blob: data: http: https:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<style>html.i18n-wait body { visibility: hidden; animation: i18n-shown 0s 1.5s forwards; } @keyframes i18n-shown { to { visibility: visible; } }</style>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Astris Launcher</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" crossorigin href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@600;700&display=swap">
+<link rel="stylesheet" href="./launcher.css">
+<body>
+<canvas id="sky" class="sky" aria-hidden="true"></canvas>
+
+<div class="app">
+  <aside class="side">
+    <a class="logo" href="./"><span class="mark"></span>ASTRIS</a>
+
+    <div class="side-fill"></div>
+
+    <nav class="side-links">
+      <button type="button" data-open="settings"><i data-icon="gear"></i><span data-i18n="settings">Settings</span></button>
+      <a id="side-github" target="_blank" rel="noopener"><i data-icon="github"></i><span data-i18n="github">GitHub</span></a>
+      <button type="button" data-open="licences"><i data-icon="doc"></i><span data-i18n="licences">Licences</span></button>
+    </nav>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="picker lang-picker" id="lang-picker">
+        <button type="button" class="lang-button" aria-haspopup="listbox" aria-expanded="false" data-i18n-title="langLabel"><span id="lang-value"></span><i data-icon="chevron"></i></button>
+        <ul class="lang-list" id="lang-list" role="listbox" hidden></ul>
+      </div>
+      <button type="button" class="account-chip" id="resources-chip"></button>
+    </header>
+
+    <section class="hero">
+      <h1><span class="mark big"></span>Astris</h1>
+
+      <div class="actions">
+        <button id="play" class="play" type="button" disabled><i data-icon="play"></i><span data-i18n="play">Play</span></button>
+
+        <div class="picker is-fixed" id="engine-picker">
+          <span class="picker-label" data-i18n="engine">Engine</span>
+          <span class="picker-value" id="engine-value"></span>
+        </div>
+
+        <div class="picker is-fixed" data-i18n-title="fixed">
+          <span class="picker-label" data-i18n="minecraft">Minecraft</span>
+          <span class="picker-value">26.3</span>
+          <i data-icon="lock"></i>
+        </div>
+      </div>
+      <div id="checks" class="checks"></div>
+    </section>
+
+    <section class="cards">
+      <article class="card">
+        <header><i data-icon="doc"></i><h2 data-i18n="lastLaunch">Last launch</h2></header>
+        <div class="card-body">
+          <div id="last-launch" class="last-launch"></div>
+          <button type="button" class="small-button" data-open="settings" data-tab="logs"><span data-i18n="viewLogs">View logs</span></button>
+        </div>
+      </article>
+    </section>
+
+    <footer class="foot">
+      <button type="button" class="support" data-open="support"><i data-icon="heart"></i><span data-i18n="support">Support the project</span></button>
+      <p class="disclaimer" data-i18n="disclaimer"></p>
+    </footer>
+  </div>
+</div>
+
+<dialog id="settings" class="window wide">
+  <header class="window-head"><h2 data-i18n="settings">Settings</h2><button type="button" class="icon-button" data-close data-i18n-title="close"><i data-icon="close"></i></button></header>
+  <div class="window-body tabs">
+    <nav class="tab-list" role="tablist">
+      <button type="button" role="tab" data-tab="general"><i data-icon="gear"></i><span data-i18n="general">General</span></button>
+      <button type="button" role="tab" data-tab="performance"><i data-icon="bolt"></i><span data-i18n="performance">Performance</span></button>
+      <button type="button" role="tab" data-tab="resources"><i data-icon="box"></i><span data-i18n="extraResources">Additional resources</span></button>
+      <span class="tab-gap" aria-hidden="true"></span>
+      <button type="button" role="tab" data-tab="logs"><i data-icon="doc"></i><span data-i18n="logs">Logs</span></button>
+      <button type="button" role="tab" data-tab="data"><i data-icon="folder"></i><span data-i18n="data">Data</span></button>
+      <button type="button" role="tab" class="tab-danger" data-tab="experimental"><i data-icon="warn"></i><span data-i18n="experimental">Experimental</span></button>
+    </nav>
+
+    <section class="tab" data-panel="general">
+      <label class="field"><span class="label" data-i18n="nickname">Nickname</span>
+        <input id="nickname" type="text" maxlength="16" spellcheck="false" autocomplete="off" pattern="[A-Za-z0-9_]{3,16}">
+        <span class="hint" data-i18n="nicknameHint"></span></label>
+      <label class="toggle"><input type="checkbox" id="motion"><span class="box"></span><span data-i18n="motion">Animated background</span></label>
+    </section>
+
+    <section class="tab" data-panel="performance">
+      <label class="field"><span class="toggle"><input type="checkbox" id="frame-cap"><span class="box"></span><span data-i18n="frameCap">Limit FPS to the monitor’s refresh rate</span></span>
+        <span class="hint" data-i18n="frameCapHint"></span></label>
+      <label class="field"><span class="label"><span data-i18n="workers">Worker threads</span> <b id="workers-val" class="value"></b></span>
+        <span class="workers-row">
+          <input type="range" id="workers" class="blocks" min="0" max="8" step="1">
+          <label class="toggle small"><input type="checkbox" id="workers-auto"><span class="box"></span><span data-i18n="autoCap">Auto</span></label>
+        </span>
+        <span class="hint" data-i18n="workersMore"></span>
+        <span class="hint" data-i18n="workersLess"></span></label>
+      <div class="field"><span class="label"><span data-i18n="memory">Memory limit</span> <b id="memory-val" class="value"></b></span>
+        <span class="workers-row">
+          <input type="range" id="memory" class="blocks" min="0" max="4" step="1">
+          <label class="toggle small"><input type="checkbox" id="memory-auto"><span class="box"></span><span data-i18n="autoCap">Auto</span></label>
+        </span>
+        <span class="hint" data-i18n="memoryHint"></span>
+        <a href="#" class="hint-link" id="wasm64-link" data-i18n="wasm64Link"></a></div>
+      <label class="field"><span class="label" data-i18n="logKeep">Launch logs to keep</span>
+        <input type="number" id="log-keep" class="number" min="1" max="100" step="1" inputmode="numeric">
+        <span class="hint" data-i18n="logKeepHint"></span></label>
+    </section>
+
+    <section class="tab" data-panel="resources">
+      <div class="field"><span class="label" data-i18n="packs">Resource packs &amp; shaders</span>
+        <span class="hint" data-i18n="packsText"></span>
+        <div class="row">
+          <label class="small-button"><i data-icon="box"></i><span data-i18n="resourcepack">Resource pack</span><input type="file" accept=".zip" multiple hidden data-import="resourcepack"></label>
+          <label class="small-button"><i data-icon="star"></i><span data-i18n="shaderpack">Shader</span><input type="file" accept=".zip" multiple hidden data-import="shaderpack"></label>
+        </div>
+        <div id="import-status" class="hint"></div></div>
+      <div class="field"><span class="label" data-i18n="netTitle">Horizon files over the network</span>
+        <span class="hint" data-i18n="netText"></span>
+        <input type="url" id="net-url" class="text-input" placeholder="http://my-pc:8790/" spellcheck="false" autocomplete="off">
+        <label class="toggle small"><input type="checkbox" id="net-consent"><span class="box"></span><span data-i18n="netConsent">I understand the risks</span></label>
+        <p class="warn-text" data-i18n="netRisk"></p>
+        <button type="button" class="small-button guide-button" id="guide-open" aria-controls="guide" aria-expanded="false"><i data-icon="doc"></i><span data-i18n="guideButton">Server guide</span></button>
+        <div class="row"><button type="button" class="small-button" id="net-import" disabled><i data-icon="folder"></i><span data-i18n="netImport">Import over the network</span></button></div></div>
+    </section>
+
+    <section class="tab" data-panel="experimental">
+      <label class="toggle"><input type="checkbox" id="wasm64"><span class="box"></span><span data-i18n="wasm64">64-bit build (wasm64)</span></label>
+      <span class="hint" id="wasm64-note" data-i18n="wasm64Hint"></span>
+      <p class="warn-text" data-i18n="wasm64Warn"></p>
+    </section>
+
+    <section class="tab logs-tab" data-panel="logs">
+      <ul id="log-list" class="log-list"></ul>
+      <div class="log-view">
+        <div class="log-tools">
+          <div class="segmented" id="log-filter"></div>
+          <input type="search" id="log-search" data-i18n-placeholder="search">
+          <button type="button" class="small-button" id="log-jump" data-i18n="firstProblem">First problem</button>
+          <button type="button" class="small-button" id="log-download"><i data-icon="download"></i><span data-i18n="download">Download</span></button>
+        </div>
+        <div id="log-summary" class="log-summary"></div>
+        <div id="log-lines" class="log-lines" tabindex="0"></div>
+      </div>
+    </section>
+
+    <section class="tab" data-panel="data">
+      <div class="field"><span class="label" data-i18n="storageTitle">Storage</span>
+        <div class="usage-total"><b id="usage"></b><span id="usage-percent"></span></div>
+        <div id="usage-bar" class="usage-bar"></div>
+        <ul id="usage-legend" class="usage-legend"></ul>
+        <p id="usage-other" class="hint" hidden></p>
+        <div id="usage-manage" class="manage" hidden></div></div>
+      <button id="clear" class="danger" type="button" data-i18n="clearData">Delete all local data</button>
+    </section>
+  </div>
+  <aside id="guide" class="guide" hidden aria-labelledby="guide-title">
+    <header class="guide-head"><h3 id="guide-title" data-i18n="guideTitle"></h3><button type="button" class="icon-button" id="guide-close" data-i18n-title="close"><i data-icon="close"></i></button></header>
+    <p data-i18n="guideIntro"></p>
+    <h4 data-i18n="guideFolderTitle"></h4>
+    <p data-i18n="guideFolder"></p>
+    <pre class="code">GET {address}/__astris.json
+  [["horizon-resources.json", 2048], ["assets/minecraft/lang/en_us.json", 551234], ...]
+GET {address}/{path}</pre>
+    <h4 data-i18n="guideZipTitle"></h4>
+    <p data-i18n="guideZip"></p>
+    <h4 data-i18n="guideHeadersTitle"></h4>
+    <p data-i18n="guideHeaders"></p>
+    <pre class="code">Access-Control-Allow-Origin: https://astris.example
+Cross-Origin-Resource-Policy: cross-origin</pre>
+    <p data-i18n="guideHttps"></p>
+    <h4 data-i18n="guideExampleTitle"></h4>
+    <p data-i18n="guideExample"></p>
+    <pre class="code" data-lang="python"># Minimal Astris server: hands out the 26.3 folder and its file list.
+import json
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+ROOT = Path("26.3")                    # the prepared folder (with horizon-resources.json)
+ORIGIN = "https://astris.example"      # where the launcher is opened
+PORT = 8790
+
+LISTING = json.dumps([[p.relative_to(ROOT).as_posix(), p.stat().st_size]
+                      for p in sorted(ROOT.rglob("*")) if p.is_file()]).encode()
+
+
+class Source(SimpleHTTPRequestHandler):
+    def end_headers(self):
+        self.send_header("Access-Control-Allow-Origin", ORIGIN)
+        self.send_header("Cross-Origin-Resource-Policy", "cross-origin")
+        super().end_headers()
+
+    def do_GET(self):
+        if self.path == "/__astris.json":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(LISTING)))
+            self.end_headers()
+            self.wfile.write(LISTING)
+        else:
+            super().do_GET()
+
+    def list_directory(self, path):
+        self.send_error(403)           # files only, no folder listings
+
+    def log_message(self, *args):
+        pass
+
+
+ThreadingHTTPServer(("0.0.0.0", PORT), partial(Source, directory=str(ROOT))).serve_forever()</pre>
+  </aside>
+</dialog>
+
+<dialog id="licences" class="window wide-ish">
+  <header class="window-head"><h2 data-i18n="licencesTitle">Licences</h2><button type="button" class="icon-button" data-close data-i18n-title="close"><i data-icon="close"></i></button></header>
+  <div class="window-body licences">
+    <ul id="lic-list" class="lic-list" role="listbox"></ul>
+    <article id="lic-card" class="lic-card"></article>
+  </div>
+  <p class="lic-foot muted" data-i18n="licencesMore"></p>
+</dialog>
+
+<dialog id="import" class="window wide-ish">
+  <header class="window-head"><h2 data-i18n="importTitle">Game resources</h2><button type="button" class="icon-button" data-close data-i18n-title="close"><i data-icon="close"></i></button></header>
+  <div class="window-body import">
+    <div id="imp-intro" class="import">
+      <div class="segmented" id="imp-mode"></div>
+      <div id="imp-online" class="import" hidden>
+        <p data-i18n="onlineIntro"></p>
+        <input type="url" id="imp-net-url" class="text-input" placeholder="http://my-pc:8790/" spellcheck="false" autocomplete="off">
+        <label class="toggle small"><input type="checkbox" id="imp-net-consent"><span class="box"></span><span data-i18n="netConsent"></span></label>
+        <p class="warn-text" data-i18n="netRisk"></p>
+        <label class="toggle small"><input type="checkbox" id="imp-net-sounds" checked><span class="box"></span><span data-i18n="importSounds">Sounds (~370 MB)</span></label>
+        <div class="row"><button type="button" class="small-button primary" id="imp-net-start" disabled><i data-icon="box"></i><span data-i18n="onlineStart">Install</span></button></div>
+      </div>
+      <div id="imp-local" class="import">
+      <p data-i18n="importIntro"></p>
+      <a id="imp-what" class="hint-link" target="_blank" rel="noopener" data-i18n="importWhat">What is Horizon?</a>
+      <details class="build-guide">
+        <summary data-i18n="buildTitle">Which Horizon build to choose?</summary>
+        <p data-i18n="buildWhy"></p>
+        <p class="build-tested"><span data-i18n="buildTested"></span> <code>nightly-2026-10-30-ba6344a</code> <span class="hint">(Minecraft 26.3)</span></p>
+        <p data-i18n="buildOther"></p>
+        <p data-i18n="buildHow"></p>
+      </details>
+      <ol class="import-steps">
+        <li data-i18n="importStep1"></li>
+        <li data-i18n="importStep2"></li>
+        <li><span data-i18n="importStep3"></span><code id="imp-path"></code><span class="hint warn-text" data-i18n="importShortPath"></span></li>
+      </ol>
+      <p class="hint" data-i18n="importOnce"></p>
+      <div class="row">
+        <button type="button" class="small-button" id="imp-pick"><i data-icon="folder"></i><span data-i18n="importPick">Choose the Horizon folder</span></button>
+        <input type="file" id="imp-folder" webkitdirectory multiple hidden>
+        <label class="small-button"><i data-icon="box"></i><span data-i18n="importZip">Choose a ZIP</span><input type="file" id="imp-zip" accept=".zip,application/zip" hidden></label>
+        <label class="toggle small"><input type="checkbox" id="imp-sounds" checked><span class="box"></span><span data-i18n="importSounds">Sounds (~370 MB)</span></label>
+      </div>
+      <div id="imp-scan" class="scan" hidden><div class="scan-wave" aria-hidden="true"></div><span id="imp-scan-text"></span></div>
+      <p id="imp-status" class="hint"></p>
+      </div>
+    </div>
+    <div id="imp-run" class="import" hidden>
+      <div id="imp-progress"><div id="imp-wait" class="xp-bar waiting" aria-hidden="true" hidden></div><div id="imp-bar" class="xp-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"></div><span class="hint" id="imp-progress-text"></span></div>
+      <div id="imp-log" class="import-log big" aria-live="polite"></div>
+      <div class="row">
+        <button type="button" class="play small" id="imp-done" hidden data-i18n="importReady">Done</button>
+        <button type="button" class="small-button" id="imp-back" hidden data-i18n="importBack">Back</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="support" class="window">
+  <header class="window-head"><h2 data-i18n="supportTitle">Support the project</h2><button type="button" class="icon-button" data-close data-i18n-title="close"><i data-icon="close"></i></button></header>
+  <div class="window-body prose"><p data-i18n="supportText"></p></div>
+</dialog>
+
+<script type="module" src="./launcher.js"></script>
+</body>
+</html>
