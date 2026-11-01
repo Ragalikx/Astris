@@ -80,7 +80,8 @@ export async function fromNetwork(address, log) {
     return fromZip(zip, given.pathname.split('/').pop());
   }
   const base = new URL(given.href.replace(/\/*$/, '/'));
-  const answer = await fetch(new URL('__astris.json', base), {cache: 'no-store'});
+  // A tunnel that stops answering would otherwise leave the import waiting forever.
+  const answer = await fetch(new URL('__astris.json', base), {cache: 'no-store', signal: AbortSignal.timeout(60000)});
   if (!answer.ok) throw new Error(`${new URL('__astris.json', base)}: HTTP ${answer.status}`);
   const raw = await answer.json();
   if (!Array.isArray(raw)) throw new Error('__astris.json is not a list');
@@ -99,7 +100,7 @@ const hidden = name => !name || name.charCodeAt(0) > 0x7e ? encodeURIComponent(n
 // A file on the network: its size is known from the list, its bytes are fetched on use.
 function remoteFile(url, path, size) {
   const once = async () => {
-    const answer = await fetch(url, {cache: 'no-store'});
+    const answer = await fetch(url, {cache: 'no-store', signal: AbortSignal.timeout(60000)});
     if (!answer.ok) throw Object.assign(new Error(`${path}: HTTP ${answer.status}`), {retry: answer.status >= 500 || answer.status === 429});
     // An announced length the list agrees with bounds the body already (the browser takes
     // no more than it); without one the bytes are counted as they come.
@@ -115,7 +116,7 @@ function remoteFile(url, path, size) {
       try {
         return await once();
       } catch (error) {
-        const network = error instanceof TypeError || error?.retry;
+        const network = error instanceof TypeError || error?.name === 'TimeoutError' || error?.retry;
         if (!network) throw error;
         if (attempt === 5) throw new Error(`${path}: ${error.message}`);
         await new Promise(resolve => setTimeout(resolve, 500 * 2 ** attempt));
