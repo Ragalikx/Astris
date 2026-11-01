@@ -93,7 +93,9 @@ settingsReady.then(settings => {
 // ---- Log: a bounded ring, rendered only while the overlay is open ----
 const lines = [];
 let dropped = 0, pending = [], flushTimer = 0, renderTimer = 0;
-const stringify = v => v instanceof Error ? v.stack || v.message : String(v);
+// Safari's stack leaves the message out, so it goes first when missing.
+const stringify = v => !(v instanceof Error) ? String(v) : !v.stack ? v.message : v.stack.includes(v.message) ? v.stack : `${v.name}: ${v.message}
+${v.stack}`;
 function sendLog() {
   flushTimer = 0;
   if (!pending.length) return;
@@ -204,6 +206,7 @@ window.horizonFrame = () => {
     const bootMs = performance.now() - started;
     settingsReady.then(() => prefs.load()).then(latest => prefs.save({...latest, bootMs}));
     log('HOST', `first frame after ${(bootMs / 1000).toFixed(1)}s`);
+    settingsReady.then(latest => latest.touch && import('./touch.js')).then(touch => { if (touch) { touch.startTouch(); log('HOST', 'touch controls on'); } });
   }
 };
 let toastTimer = 0;

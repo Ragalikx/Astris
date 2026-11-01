@@ -604,6 +604,8 @@ function renderSettings() {
   box.disabled = !supported;
   $('#wasm64-note').textContent = supported ? t('wasm64Hint') : t('wasm64Unsupported');
   box.onchange = () => { update({wasm64: box.checked}); memory(); };
+  $('#touch').checked = settings.touch;
+  $('#touch').onchange = () => update({touch: $('#touch').checked});
 }
 
 // What the game's folder (opfs-worker.js's horizon-session) and the launcher keep, by kind.

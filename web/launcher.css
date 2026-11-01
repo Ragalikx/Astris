@@ -226,7 +226,7 @@ input[type="range"] { width: 100%; accent-color: var(--face-bevel); }
 .usage-legend em { font: 12px var(--mono); color: var(--dim); font-style: normal; min-width: 5ch; text-align: right; }
 
 /* ---- Narrow screens ---- */
-@media (max-width: 860px) {
+@media (max-width: 860px) and (orientation: portrait), (max-width: 560px) {
   .app { grid-template-columns: 1fr; }
   .side { position: static; height: auto; display: grid; grid-template-columns: 1fr auto; align-items: center; border-right: 0; border-bottom: 2px solid var(--line); padding: 12px 16px; }
 .side-fill { display: none; }
@@ -294,7 +294,7 @@ input[type="range"] { width: 100%; accent-color: var(--face-bevel); }
 .tab-list .tab-danger:hover { color: #ffb4a8; background: rgba(240, 122, 104, .1); }
 .tab-list .tab-danger[aria-selected="true"] { color: #fff; background: #7a2e25; box-shadow: var(--bevel), inset 3px 0 0 var(--danger); }
 .warn-text { margin: 0; max-width: 520px; padding: 8px 12px; color: #ffb4a8; background: rgba(240, 122, 104, .1); border-left: 3px solid var(--danger); font-size: 13px; }
-@media (max-width: 860px) { .tab-list { grid-template-rows: none; height: auto; } .tab-gap { display: none; } }
+@media (max-width: 860px) and (orientation: portrait), (max-width: 560px) { .tab-list { grid-template-rows: none; height: auto; } .tab-gap { display: none; } }
 
 /* ---- Block sliders (threads, memory) ----
    The thumb's centre travels from half its width to the width minus half: the blocks
@@ -411,13 +411,13 @@ dialog.window.wide-ish { width: min(760px, calc(100vw - 32px)); }
 @media (max-width: 640px) { .licences { grid-template-columns: 1fr; } }
 
 /* ---- Phones ---- */
-@media (max-width: 860px) {
+@media (max-width: 860px) and (orientation: portrait), (max-width: 560px) {
   .tabs { grid-template-rows: auto minmax(0, 1fr); gap: 0; }
   .tab-list { border-bottom: 2px solid var(--line); padding: 8px 12px; scrollbar-width: none; }
   .tab-list button { white-space: nowrap; }
   .tab { padding: 16px; }
 }
-@media (max-width: 600px) {
+@media (max-width: 600px), (max-height: 500px) {
   dialog.window, dialog.window.wide, dialog.window.wide-ish { width: 100vw; max-width: 100vw; height: 100dvh; max-height: 100dvh; margin: 0; border: 0; }
   .window-body { padding: 14px; }
   .small-button, .danger, .tab-list button, .icon-button { min-height: 40px; }
@@ -425,6 +425,17 @@ dialog.window.wide-ish { width: min(760px, calc(100vw - 32px)); }
   .topbar { justify-content: space-between; }
   input, select, textarea { font-size: 16px; }
 }
-@media (max-width: 860px) {
+@media (max-width: 860px) and (orientation: portrait), (max-width: 560px) {
   .side, .main { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+}
+
+/* Phones on their side: the desktop layout, made compact to fit the short screen. */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app { grid-template-columns: 196px 1fr; }
+  .side { padding: 10px 10px 10px max(10px, env(safe-area-inset-left)); gap: 6px; overflow-y: auto; }
+  .logo { font-size: 18px; margin-bottom: 2px; }
+  .main { gap: 12px; padding: 8px max(16px, env(safe-area-inset-right)) 10px 18px; }
+  .hero { padding: 4px 0; gap: 8px; }
+  .hero h1 { font-size: 36px; }
+  .play { min-height: 46px; font-size: 20px; }
 }

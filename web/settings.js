@@ -8,6 +8,7 @@ export const DEFAULTS = Object.freeze({
   workers: 0,          // 0 = the game picks for this machine, else 1-8
   memoryGiB: 0,        // 0 = auto; a preference the game does not apply yet
   wasm64: false,       // the experimental memory64 build
+  touch: false,        // on-screen touch controls (touch.js), experimental
   nickname: '',        // shown in the launcher only; the game uses the Minecraft profile name
   motion: true,        // animated background
   engine: 'astris',    // the engine build picked in the version list
@@ -28,6 +29,7 @@ function sanitize(raw) {
   const memory = Number(raw?.memoryGiB);
   if ([0, 1, 2, 3, 4, 6, 8].includes(memory)) out.memoryGiB = memory;
   out.wasm64 = raw?.wasm64 === true;
+  out.touch = raw?.touch === true;
   if (typeof raw?.nickname === 'string') out.nickname = raw.nickname.trim().slice(0, 16);
   out.motion = raw?.motion !== false;
   out.frameCap = raw?.frameCap !== false;
