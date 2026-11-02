@@ -209,6 +209,15 @@ window.horizonFrame = () => {
     const bootMs = performance.now() - started;
     settingsReady.then(() => prefs.load()).then(latest => prefs.save({...latest, bootMs}));
     log('HOST', `first frame after ${(bootMs / 1000).toFixed(1)}s`);
+    // What the screen shows once the loading screen is gone: a black screen with frames running
+    // is either something on top of the canvas or a canvas the browser does not show.
+    setTimeout(() => {
+      const canvas = document.querySelector('body > canvas');
+      const box = canvas?.getBoundingClientRect();
+      const top = document.elementFromPoint(innerWidth / 2, innerHeight / 2);
+      const name = el => el ? `${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${el.className && typeof el.className === 'string' ? '.' + el.className.split(' ').join('.') : ''}` : 'none';
+      log('HOST', `view: canvas ${canvas ? `${canvas.width}x${canvas.height} shown ${box.width.toFixed(0)}x${box.height.toFixed(0)} at ${box.left.toFixed(0)},${box.top.toFixed(0)} opacity ${getComputedStyle(canvas).opacity}` : 'missing'}; window ${innerWidth}x${innerHeight} dpr ${devicePixelRatio}; on top ${name(top)}; loading ${$('#boot').hidden ? 'hidden' : 'shown'}`);
+    }, 3000);
     settingsReady.then(latest => latest.touch && import('./touch.js')).then(touch => { if (touch) { touch.startTouch(); log('HOST', 'touch controls on'); } });
   }
 };
