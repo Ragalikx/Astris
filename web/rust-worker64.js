@@ -7,4 +7,5 @@ globalThis.horizonRandomFill = len => {
   for (let at = 0; at < len; at += 65536) crypto.getRandomValues(out.subarray(at, Math.min(len, at + 65536)));
   return out;
 };
-runRustWorker(initSync, wasm_thread_entry_point, {destroyArgs: [0n, 0n, 0n]});
+// wasm-bindgen's memory64 thread support passes addresses to JS as f64, plain numbers.
+runRustWorker(initSync, wasm_thread_entry_point, {destroyArgs: [0, 0, 0]});
