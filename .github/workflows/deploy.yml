@@ -7,6 +7,8 @@ name: Deploy
 on:
   push:
     branches: [main]
+    # Text that never reaches the site starts no build.
+    paths-ignore: ['**.md', 'LICENSE*', 'tools/astris-share.py', 'tools/check_public_tree.py']
   workflow_dispatch:
 
 # A running build is let finish (so its engine lands in the cache); pushes made meanwhile
