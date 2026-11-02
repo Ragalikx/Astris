@@ -42,11 +42,6 @@
       <div class="actions">
         <button id="play" class="play" type="button" disabled><i data-icon="play"></i><span data-i18n="play">Play</span></button>
 
-        <div class="picker is-fixed" id="engine-picker">
-          <span class="picker-label" data-i18n="engine">Engine</span>
-          <span class="picker-value" id="engine-value"></span>
-        </div>
-
         <div class="picker is-fixed" data-i18n-title="fixed">
           <span class="picker-label" data-i18n="minecraft">Minecraft</span>
           <span class="picker-value">26.3</span>
@@ -250,7 +245,7 @@ ThreadingHTTPServer(("0.0.0.0", PORT), partial(Source, directory=str(ROOT))).ser
       <details class="build-guide">
         <summary data-i18n="buildTitle">Which Horizon build to choose?</summary>
         <p data-i18n="buildWhy"></p>
-        <p class="build-tested"><span data-i18n="buildTested"></span> <code>nightly-2026-10-30-ba6344a</code> <span class="hint">(Minecraft 26.3)</span></p>
+        <p class="build-tested"><span data-i18n="buildTested"></span> <code>schema 7</code> <span class="hint">(Minecraft 26.3)</span></p>
         <p data-i18n="buildOther"></p>
         <p data-i18n="buildHow"></p>
       </details>

@@ -61,14 +61,18 @@ jobs:
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen.rev
             target
-          key: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ env.WASM_BINDGEN_REV }}-${{ hashFiles('Cargo.lock') }}
-          restore-keys: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ env.WASM_BINDGEN_REV }}-
+          key: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ env.WASM_BINDGEN_REV }}-src-${{ hashFiles('Cargo.lock') }}
+          restore-keys: cargo-${{ matrix.name }}-${{ env.TOOLCHAIN }}-${{ env.WASM_BINDGEN_REV }}-src-
 
       - name: wasm-bindgen and Binaryen
         if: steps.built.outputs.cache-hit != 'true'
         run: |
           if [ "$(cat ~/.cargo/bin/wasm-bindgen.rev 2>/dev/null)" != "$WASM_BINDGEN_REV" ]; then
-            cargo install wasm-bindgen-cli --git https://github.com/wasm-bindgen/wasm-bindgen --rev $WASM_BINDGEN_REV --locked --force
+            # From the source archive, not a git checkout: built in a checkout, wasm-bindgen adds
+            # the commit to its schema version ("0.2.129 (add691ae7)") and then refuses the
+            # crate's plain "0.2.129".
+            curl -sL https://github.com/wasm-bindgen/wasm-bindgen/archive/$WASM_BINDGEN_REV.tar.gz | tar xz -C $RUNNER_TEMP
+            GIT_DIR=/nonexistent cargo install --path $RUNNER_TEMP/wasm-bindgen-$WASM_BINDGEN_REV/crates/cli --locked --force
             echo "$WASM_BINDGEN_REV" > ~/.cargo/bin/wasm-bindgen.rev
           fi
           curl -sL https://github.com/WebAssembly/binaryen/releases/download/$BINARYEN/binaryen-$BINARYEN-x86_64-linux.tar.gz | tar xz -C $RUNNER_TEMP

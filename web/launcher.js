@@ -15,7 +15,6 @@ const GITHUB_URL = 'https://github.com/Ragalikx/Astris';
 // Where "What is Horizon?" leads: the project whose launcher prepares the game's resources.
 const HORIZON_URL = 'https://github.com/horizon-rust/horizon#readme';
 // The engine build the launcher ships with.
-const ENGINE = {name: '1087a94', sub: 'Nightly 2026-11-01 · Horizon d2186eb'};
 
 // What Astris is made of, for the licences window: the engine, the libraries built into
 // it, the fonts and icons, and the game's own files (the player's copy).
@@ -303,7 +302,7 @@ function setupImportWindow() {
     } catch (error) {
       importLog(`error: ${error.message}`);
       failed(error.code === 'version' ? t('importWrongVersion', {found: error.found, want: resources.MINECRAFT})
-        : error.code === 'schema' ? t('importWrongSchema') : t('importFailed', {error: error.message}));
+        : error.code === 'schema' ? t('importWrongSchema', {found: error.found}) : t('importFailed', {error: error.message}));
       return;
     }
     await copy(dir);
@@ -387,12 +386,6 @@ function environmentChecks() {
   for (const [, key] of failed) llog('WARN', `browser check failed: ${key}, Play is turned off`);
   $('#checks').replaceChildren(...failed.map(([, key]) => el('div', {textContent: `✕ ${t('unavailable', {what: t(key)})}`})));
   return failed.length === 0;
-}
-
-// ---- Engine picker (a stub until other builds can be installed) ----
-function renderEngines() {
-  $('#engine-value').textContent = ENGINE.name;
-  $('#engine-picker').title = ENGINE.sub;
 }
 
 // ---- Licences: every source on the left, the picked one's card on the right ----
@@ -893,7 +886,6 @@ function renderAll() {
   renderLangMenu();
   browserOk = environmentChecks();
   renderResources();
-  renderEngines();
   renderLicences();
   renderLastLaunch();
   if ($('#settings').open) {
