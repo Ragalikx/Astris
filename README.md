@@ -7,6 +7,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Minecraft-26.3-5aa83f?style=flat-square" alt="Minecraft 26.3">
   <img src="https://img.shields.io/badge/status-beta-e0b45a?style=flat-square" alt="Beta">
+  <a href="https://astris-bcu.pages.dev/"><img src="https://img.shields.io/badge/play-astris--bcu.pages.dev-4c8bf5?style=flat-square" alt="Play: astris-bcu.pages.dev"></a>
   <img src="https://img.shields.io/badge/license-MIT-9b8fd8?style=flat-square" alt="MIT">
 </p>
 
