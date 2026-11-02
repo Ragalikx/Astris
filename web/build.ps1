@@ -36,7 +36,9 @@ try {
    $features = @('--enable-threads','--enable-bulk-memory','--enable-simd','--enable-mutable-globals','--enable-sign-ext','--enable-nontrapping-float-to-int','--enable-reference-types','--enable-multivalue')
    if($Wasm64){ $features += '--enable-memory64' }
    $before = (Get-Item $wasm).Length
-   & $wasmOpt -O3 @features $wasm -o $wasm
+   # -g keeps the function names: a crash in the browser then names the Rust function
+   # instead of wasm-function[14702]. About 3.7 MB more, around 1 MB over the network.
+   & $wasmOpt -O3 -g @features $wasm -o $wasm
    if($LASTEXITCODE -ne 0){throw 'wasm-opt failed'}
    Write-Host ("wasm-opt: {0:N1} MB -> {1:N1} MB" -f ($before/1MB), ((Get-Item $wasm).Length/1MB))
   } else { Write-Warning 'wasm-opt (Binaryen) not found; skipping size/speed pass' }
