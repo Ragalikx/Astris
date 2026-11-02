@@ -1,5 +1,11 @@
 # Third-party notices
 
+## Horizon
+
+The engine in `crates/` is based on [Horizon](https://github.com/horizon-rust/horizon) by Ludovic
+Marie and the Horizon contributors, licensed under MIT. Its license and copyright notice are in
+`LICENSE-HORIZON`.
+
 ## wgpu-hal
 
 `third_party/wgpu-hal` is [wgpu-hal](https://github.com/gfx-rs/wgpu) 30.0.1 by the gfx-rs
