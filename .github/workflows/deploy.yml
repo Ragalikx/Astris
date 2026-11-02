@@ -54,8 +54,12 @@ jobs:
           rustup toolchain install $TOOLCHAIN --profile minimal --component rust-src
           rustup default $TOOLCHAIN
 
-      - if: steps.built.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
+      # Restored here and saved after the build whatever its outcome: a plain actions/cache saves
+      # only when the whole job succeeds, so a build failing at its last step (wasm-bindgen)
+      # used to throw away its 15 minutes of compiling and start from nothing the next time.
+      - id: cargo
+        if: steps.built.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/.cargo/registry
@@ -84,6 +88,19 @@ jobs:
         if: steps.built.outputs.cache-hit != 'true'
         shell: pwsh
         run: ./web/build.ps1 -Release ${{ matrix.flags }} -CpuShare 1
+
+      - if: always() && steps.built.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen.rev
+            target
+          # A new key per run: a cache entry cannot be overwritten, and the restore above picks
+          # the newest one by its prefix.
+          key: ${{ steps.cargo.outputs.cache-primary-key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - uses: actions/upload-artifact@v4
         with:
