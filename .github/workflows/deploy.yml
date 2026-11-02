@@ -20,9 +20,10 @@ concurrency:
 env:
   TOOLCHAIN: nightly-2026-10-29
   RUST_TOOLCHAIN: nightly-2026-10-29
-  # wasm-bindgen from git: threads on memory64 (wasm64) landed after the 0.2.129 release,
-  # and this commit still speaks 0.2.129, the version Cargo.lock pins.
-  WASM_BINDGEN_REV: add691ae7cccf88a00dc4bb66c4b50b406d014f6
+  # wasm-bindgen from git: threads on memory64 (wasm64) landed after the 0.2.129 release.
+  # This is that very commit, the last before the bindgen schema moved on (0.2.128, the
+  # same as the 0.2.129 crate Cargo.lock pins). Later commits are refused by the crate.
+  WASM_BINDGEN_REV: 6c5a4a224a7204bb8c80a9389399fab4fbed8a2c
   BINARYEN: version_133
   PROJECT: astris
 
